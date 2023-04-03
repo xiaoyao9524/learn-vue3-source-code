@@ -1,0 +1,29 @@
+{
+  // 编辑器配置
+  "compilerOptions": {
+    "rootDir": ".", // 根目录
+    "strict": true, // 是否开启严格模式
+    "moduleResolution": "node", // 指定类型脚本如何从给定的模块说明符查找文件
+    "esModuleInterop": true, // https://www.typescriptlang.org/tsconfig#esModuleInterop
+    "target": "es5", // JS语言版本
+    "noUnusedLocals": false, // 允许未读取的参数
+    "resolveJsonModule": true, // 允许解析json
+    "downlevelIteration": true, // https://www.typescriptlang.org/tsconfig#downlevelIteration
+    "noImplicitAny": false, // 允许使用隐式的any类型，这样有助于我们简化ts的复杂度，从而更加专注于逻辑本身
+    "module": "esnext", // 模块化
+    "removeComments": false, // 转化为Javascript时从Typescript文件中删除所有的注释
+    "sourceMap": false, // 禁用sourceMap
+    "lib": ["esnext", "dom"], // https://www.typescriptlang.org/tsconfig#lib
+    "baseUrl": ".",
+    // 设置快捷导入
+    "paths":  {
+      "@vue/*": [
+        "packages/*/src"
+      ]
+    }
+  },
+  // 入口
+  "include": [
+    "packages/*/src"
+  ]
+}
