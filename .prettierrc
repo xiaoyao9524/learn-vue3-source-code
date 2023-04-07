@@ -1,6 +1,6 @@
 {
   // 结尾无分号
-  "semi": false, 
+  "semi": false,
   // 全部使用单引号
   "singleQuote": true,
   // 每行长度为80

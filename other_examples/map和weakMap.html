@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map和weakMap</title>
+</head>
+
+<body>
+  <script>
+    let target = {
+      name: '张三'
+    }
+
+    const map = new Map(); // key是强引用
+
+    map.set(target, '张三');
+
+    target = null; // 此时查看map.get(target)依然有值，垃圾回收机制并未回收target
+
+
+
+    let target2 = {
+      name: '李四'
+    }
+
+    const map2 = new WeakMap(); // key是弱引用
+
+    map2.set(target2, '李四');
+
+    target2 = null; // 此时查看map2.get(target2)为空，垃圾回收机制已经回收target2
+
+  </script>
+</body>
+
+</html>
