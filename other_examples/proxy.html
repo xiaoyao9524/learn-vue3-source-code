@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>proxy example</title>
+</head>
+
+<body>
+  <script>
+    const p = new Proxy({
+      name: '张三',
+      age: 18
+    }, {
+      get (target, key, receiver) {
+        console.log('getter: ', target, key);
+        return Reflect.get(target, key, receiver)
+      },
+      set (target, key, newVal, receiver) {
+        console.log('setter: ', target, key);
+        return Reflect.set(target, key, newVal, receiver);
+      }
+    })
+
+    class RefImpl {
+      constructor() {
+
+      }
+
+      get value () {
+        console.log('refGetter...');
+
+        return p;
+      }
+    }
+
+    const ref = new RefImpl();
+
+    ref.value.name = '李四'; // proxy的get函数不会触发，但是class中的get value 函数会触发
+
+
+  </script>
+</body>
+
+</html>

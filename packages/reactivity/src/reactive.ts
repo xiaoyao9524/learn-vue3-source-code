@@ -1,18 +1,11 @@
-import {
-  mutableHandlers
-} from './baseHandlers';
+import { mutableHandlers } from "./baseHandlers";
+import { isObject } from "@vue/shared";
 
-
-export const reactiveMap = new WeakMap<object, any>()
+export const reactiveMap = new WeakMap<object, any>();
 
 export function reactive(target: object) {
-  return createReactiveObject(
-    target,
-    mutableHandlers,
-    reactiveMap
-  );
+  return createReactiveObject(target, mutableHandlers, reactiveMap);
 }
-
 
 function createReactiveObject(
   target: object,
@@ -31,3 +24,7 @@ function createReactiveObject(
 
   return proxy;
 }
+
+export const toReactive = <T extends unknown>(value: T) => {
+  return isObject(value) ? reactive(value as object) : value;
+};

@@ -1,0 +1,13 @@
+{
+  "semi": true, // 结尾无分号
+  "singleQuote": true, // 全部使用单引号
+  "bracketSpacing": true, // 对象中的空格 默认true
+  // 每行长度为80
+  "printWidth": 80,
+  // 不添加尾随逗号
+  "trailingComma": "none",
+  // 箭头函数参数括号 默认avoid 可选 avoid| always
+  // avoid 能省略括号的时候就省略 例如x => x
+  // always 总是有括号
+  "arrowParens": "avoid"
+}

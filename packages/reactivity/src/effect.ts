@@ -1,4 +1,5 @@
-import { Dep, createDep } from "./dep";
+import { Dep, createDep } from './dep';
+import { isArray } from '@vue/shared';
 
 type KeyToDepMap = Map<any, Dep>;
 
@@ -14,7 +15,7 @@ const targetMap = new WeakMap<object, KeyToDepMap>();
 /**
  * 当前激活的依赖
  */
-let activeEffect: ReactiveEffect | undefined;
+export let activeEffect: ReactiveEffect | undefined;
 
 export function effect<T = any>(fn: () => T) {
   const _effect = new ReactiveEffect<T>(fn);
@@ -90,7 +91,7 @@ export function trigger(target: object, key: unknown, newValue: unknown) {
  * @param dep
  */
 export function triggerEffects(dep: Dep) {
-  const effects = Array.isArray(dep) ? dep : [...dep];
+  const effects = isArray(dep) ? dep : [...dep];
 
   for (let effect of effects) {
     triggerEffect(effect);
