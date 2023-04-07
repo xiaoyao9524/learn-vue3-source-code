@@ -1,4 +1,6 @@
-type KeyToDepMap = Map<any, ReactiveEffect>;
+import { Dep, createDep } from "./dep";
+
+type KeyToDepMap = Map<any, Dep>;
 
 /**
  * targetMap:
@@ -35,8 +37,6 @@ export class ReactiveEffect<T = any> {
  * @param key
  */
 export function track(target: object, key: unknown) {
-  console.log("收集依赖");
-
   if (!activeEffect) {
     return;
   }
@@ -47,9 +47,20 @@ export function track(target: object, key: unknown) {
     targetMap.set(target, (depsMap = new Map()));
   }
 
-  depsMap.set(key, activeEffect);
+  let dep = depsMap.get(key);
 
-  console.log("targetMap: ", targetMap);
+  if (!dep) {
+    depsMap.set(key, (dep = createDep()));
+  }
+
+  trackEffects(dep);
+}
+
+/**
+ * 利用 dep 依次跟踪指定key的所有effect
+ */
+export function trackEffects(dep: Dep) {
+  dep.add(activeEffect!);
 }
 
 /**
@@ -59,18 +70,37 @@ export function track(target: object, key: unknown) {
  * @param newValue
  */
 export function trigger(target: object, key: unknown, newValue: unknown) {
-  console.log("触发依赖");
-
   const depsMap = targetMap.get(target);
+
   if (!depsMap) {
     return;
   }
 
-  const effect = depsMap.get(key) as ReactiveEffect;
+  const dep = depsMap.get(key);
 
-  if (!effect) {
+  if (!dep) {
     return;
   }
 
-  effect.fn();
+  triggerEffects(dep);
+}
+
+/**
+ * 依次触发 dep 中保存的依赖
+ * @param dep
+ */
+export function triggerEffects(dep: Dep) {
+  const effects = Array.isArray(dep) ? dep : [...dep];
+
+  for (let effect of effects) {
+    triggerEffect(effect);
+  }
+}
+
+/**
+ * 触发指定依赖
+ * @param effect
+ */
+export function triggerEffect(effect: ReactiveEffect) {
+  effect.run();
 }
