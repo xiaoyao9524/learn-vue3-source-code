@@ -8,3 +8,9 @@ export const isObject = (val: unknown) =>
  */
 export const hasChanged = (val: any, oldValue: any): boolean =>
   !Object.is(val, oldValue);
+
+export const isFunction = (val: unknown): val is Function => {
+  return typeof val === 'function';
+};
+
+export const NOOP = () => {};

@@ -20,7 +20,7 @@ function createRef(rawValue: unknown, shallow: boolean) {
 }
 
 class RefImpl<T> {
-  private _value: T;
+  private _value: T; // 经过处理后get value返回的值(基础类型就是原样返回，对象返回reactive后的实例)
 
   private _rawValue: T; // 原始值，可以理解为ref传进来的参数
 
@@ -49,7 +49,8 @@ class RefImpl<T> {
 }
 
 /**
- * 收集依赖
+ * 将当前激活的副作用添加到 ref类型的实例 dep中
+ * @param ref 要收集依赖的ref实例
  */
 export function trackRefValue(ref) {
   if (activeEffect) {
@@ -58,7 +59,8 @@ export function trackRefValue(ref) {
 }
 
 /**
- * 触发依赖
+ * 触发 ref类型实例 的dep
+ * @param ref 要触发依赖的ref实例
  */
 export function triggerRefValue(ref) {
   if (ref.dep) {
@@ -66,6 +68,7 @@ export function triggerRefValue(ref) {
   }
 }
 
+// 判断是否为ref类型的实例
 export function isRef(r: any): r is Ref {
   return !!(r && r.__v_isRef === true);
 }

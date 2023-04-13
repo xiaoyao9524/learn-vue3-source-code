@@ -17,6 +17,8 @@ const targetMap = new WeakMap<object, KeyToDepMap>();
  */
 export let activeEffect: ReactiveEffect | undefined;
 
+export type EffectSchedular = (...args: any[]) => any;
+
 export function effect<T = any>(fn: () => T) {
   const _effect = new ReactiveEffect<T>(fn);
 
@@ -24,7 +26,19 @@ export function effect<T = any>(fn: () => T) {
 }
 
 export class ReactiveEffect<T = any> {
-  constructor(public fn: () => T) {}
+  public computed?: any;
+  /**
+   * @param fn 当前副作用的函数
+   * @param scheduler 在触发依赖时调用，如果没有，则触发时调用this.run
+   */
+  /**
+   * public fn: () => T,
+     public scheduler: EffectScheduler | null = null,
+   */
+  constructor(
+    public fn: () => T,
+    public scheduler: EffectSchedular | null = null
+  ) {}
 
   run() {
     activeEffect = this;
@@ -33,9 +47,9 @@ export class ReactiveEffect<T = any> {
 }
 
 /**
- * 收集依赖
- * @param target
- * @param key
+ * 将当前副作用添加到targetMap -> target -> key -> dep中
+ * @param target 要添加依赖的target
+ * @param key    要添加依赖的key
  */
 export function track(target: object, key: unknown) {
   if (!activeEffect) {
@@ -58,17 +72,18 @@ export function track(target: object, key: unknown) {
 }
 
 /**
- * 利用 dep 依次跟踪指定key的所有effect
+ * 将当前激活的副作用添加到dep中
+ * @param dep 要添加依赖的dep
  */
 export function trackEffects(dep: Dep) {
   dep.add(activeEffect!);
 }
 
 /**
- * 触发依赖
- * @param target
- * @param key
- * @param newValue
+ * 从targetMap中找到要触发的依赖并执行
+ * @param target 要触发依赖的target
+ * @param key    要触发依赖的key
+ * @param newValue 新的value
  */
 export function trigger(target: object, key: unknown, newValue: unknown) {
   const depsMap = targetMap.get(target);
@@ -93,8 +108,18 @@ export function trigger(target: object, key: unknown, newValue: unknown) {
 export function triggerEffects(dep: Dep) {
   const effects = isArray(dep) ? dep : [...dep];
 
+  // 先触发所有的计算属性依赖，计算出值
+  // 再去触发所有其他依赖，否则会出现死循环的情况
   for (let effect of effects) {
-    triggerEffect(effect);
+    if (effect.computed) {
+      triggerEffect(effect);
+    }
+  }
+
+  for (let effect of effects) {
+    if (!effect.computed) {
+      triggerEffect(effect);
+    }
   }
 }
 
@@ -103,5 +128,9 @@ export function triggerEffects(dep: Dep) {
  * @param effect
  */
 export function triggerEffect(effect: ReactiveEffect) {
-  effect.run();
+  if (effect.scheduler) {
+    effect.scheduler();
+  } else {
+    effect.run();
+  }
 }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>computed</title>
+  <script src="../../../vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    const { ref, computed, effect } = Vue;
+
+    const firstName = ref('张')
+    const lastName = ref('三')
+
+    const computedName = computed({
+      get () {
+        return '姓名：' + firstName.value + lastName.value;
+      },
+      set (newVal) {
+        [firstName.value, lastName.value] = [newVal[0], newVal.slice(1)];
+      }
+    })
+
+    effect(() => {
+      console.log('effect...');
+
+      document.querySelector('#app').innerText = computedName.value;
+    })
+
+    setTimeout(() => {
+      firstName.value = '李'
+      // lastName.value = '四'
+    }, 2000)
+  </script>
+</body>
+
+</html>
