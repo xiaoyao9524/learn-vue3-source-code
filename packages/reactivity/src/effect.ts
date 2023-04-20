@@ -1,5 +1,5 @@
 import { Dep, createDep } from './dep';
-import { isArray } from '@vue/shared';
+import { isArray, extend } from '@vue/shared';
 
 type KeyToDepMap = Map<any, Dep>;
 
@@ -12,21 +12,43 @@ type KeyToDepMap = Map<any, Dep>;
  */
 const targetMap = new WeakMap<object, KeyToDepMap>();
 
+declare const window: Window & {
+  targetMap: any;
+  activeEffect: any;
+};
+window.targetMap = targetMap;
+
 /**
  * 当前激活的依赖
  */
 export let activeEffect: ReactiveEffect | undefined;
+window.activeEffect = activeEffect;
 
-export type EffectSchedular = (...args: any[]) => any;
+export type EffectScheduler = (...args: any[]) => any;
 
-export function effect<T = any>(fn: () => T) {
+export interface ReactiveEffectOptions {
+  lazy?: boolean;
+  scheduler?: EffectScheduler;
+  // scope?: EffectScope
+  // allowRecurse?: boolean
+  // onStop?: () => void
+}
+
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions) {
   const _effect = new ReactiveEffect<T>(fn);
 
-  _effect.run();
+  if (options) {
+    extend(_effect, options);
+  }
+
+  if (!options || !options.lazy) {
+    _effect.run();
+  }
 }
 
 export class ReactiveEffect<T = any> {
   public computed?: any;
+  public active: boolean = true;
   /**
    * @param fn 当前副作用的函数
    * @param scheduler 在触发依赖时调用，如果没有，则触发时调用this.run
@@ -37,7 +59,7 @@ export class ReactiveEffect<T = any> {
    */
   constructor(
     public fn: () => T,
-    public scheduler: EffectSchedular | null = null
+    public scheduler: EffectScheduler | null = null
   ) {}
 
   run() {

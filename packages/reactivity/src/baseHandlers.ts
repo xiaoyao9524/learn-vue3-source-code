@@ -1,4 +1,4 @@
-import { track, trigger } from "./effect";
+import { track, trigger } from './effect';
 
 const get = createGetter();
 
@@ -31,5 +31,5 @@ function createSetter() {
 
 export const mutableHandlers: ProxyHandler<object> = {
   get,
-  set,
+  set
 };
