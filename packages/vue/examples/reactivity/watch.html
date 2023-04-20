@@ -21,6 +21,8 @@
 
     watch(obj, (newVal) => {
       console.log('watch触发了：', newVal);
+    }, {
+      immediate: true
     })
 
     setTimeout(() => {

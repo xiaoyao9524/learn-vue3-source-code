@@ -36,8 +36,6 @@ function createReactiveObject(
 
   const proxy = new Proxy(target, baseHandlers);
 
-  proxy[ReactiveFlags.IS_REACTIVE] = true;
-
   proxyMap.set(target, proxy);
 
   return proxy;

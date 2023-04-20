@@ -1,18 +1,32 @@
 import { ReactiveEffect, isReactive } from '@vue/reactivity';
 import { queuePreFlushCb } from './scheduler';
 import { callWithAsyncErrorHandling } from './errorHandling';
-import { NOOP, isObject, isPiniaObject } from '@vue/shared';
+import {
+  NOOP,
+  EMPTY_OBJ,
+  isObject,
+  isPiniaObject,
+  hasChanged
+} from '@vue/shared';
 
-interface WatchOptions {
-  immediate?: boolean;
+export interface WatchOptions<immediate = boolean> {
+  immediate?: immediate;
   deep?: boolean;
 }
 
-export function watch(source: unknown, cb: any, options: WatchOptions = {}) {
+export function watch(
+  source: unknown,
+  cb: Function,
+  options: WatchOptions = {}
+) {
   return doWatch(source, cb, options);
 }
 
-function doWatch(source: any, cb: any, { immediate, deep }: WatchOptions = {}) {
+function doWatch(
+  source: any,
+  cb: Function,
+  { immediate, deep }: WatchOptions = EMPTY_OBJ
+) {
   let getter: () => any;
 
   if (isReactive(source)) {
@@ -20,6 +34,11 @@ function doWatch(source: any, cb: any, { immediate, deep }: WatchOptions = {}) {
     deep = true;
   } else {
     getter = NOOP;
+  }
+
+  if (cb && deep) {
+    const baseGetter = getter;
+    getter = () => traverse(baseGetter());
   }
 
   let job = () => {
@@ -30,8 +49,9 @@ function doWatch(source: any, cb: any, { immediate, deep }: WatchOptions = {}) {
     if (cb) {
       const newValue = effect.run();
 
-      if (deep) {
+      if (deep || hasChanged(newValue, oldValue)) {
         callWithAsyncErrorHandling(cb, [newValue, oldValue]);
+        oldValue = newValue;
       }
     } else {
       effect.run();
@@ -40,12 +60,7 @@ function doWatch(source: any, cb: any, { immediate, deep }: WatchOptions = {}) {
 
   const scheduler = () => queuePreFlushCb(job);
 
-  if (cb && deep) {
-    const baseGetter = getter;
-    getter = () => traverse(baseGetter());
-  }
-
-  let oldValue = {};
+  let oldValue = EMPTY_OBJ;
 
   const effect = new ReactiveEffect(getter, scheduler);
 
@@ -55,35 +70,30 @@ function doWatch(source: any, cb: any, { immediate, deep }: WatchOptions = {}) {
     } else {
       oldValue = effect.run();
     }
+  } else {
+    effect.run();
   }
 
   /** unwatch */
-  return () => {};
+  return () => {
+    effect.stop();
+  };
 }
 
 /**
  * 遍历value
- * · 如果是对象，那么会遍历每个属性
+ * · 如果是对象，那么会递归遍历每个属性，触发每一个key的一次getter去收集依赖
  * @param value 要遍历的值
- * @param seen ??
  * @returns 返回value
  */
-export function traverse(value: unknown /*seen?: Set<unknown>*/) {
+export function traverse(value: unknown) {
   if (!isObject(value)) {
     return value;
   }
-  // seen暂时没用到，先忽视
-  // seen = seen || new Set();
-
-  // if (seen.has(value)) {
-  //   return value;
-  // }
-
-  // seen.add(value);
 
   if (isPiniaObject(value)) {
     for (let key in value) {
-      traverse(value[key] /*, seen*/);
+      traverse(value[key]);
     }
   }
 
