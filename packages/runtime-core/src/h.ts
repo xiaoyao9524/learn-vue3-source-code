@@ -39,7 +39,7 @@ export function h(type: any, propsOrChildren?: any, children?: any): VNode {
   // 如果只有两个参数，那么第二个参数有可能是props，也可能是children
   if (l === 2) {
     // ↓如果第二个参数是对象并且不是数组的话，那么说明有可能是props或者单个的vnode
-    if (isObject(propsOrChildren) && isArray(propsOrChildren)) {
+    if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
       // ↓说明是单个的vnode
       if (isVNode(propsOrChildren)) {
         return createVNode(type, null, [propsOrChildren]);

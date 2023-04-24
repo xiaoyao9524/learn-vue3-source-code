@@ -1,2 +1,13 @@
 export { reactive, isReactive, effect, ref, computed } from '@vue/reactivity';
-export { watch, queuePreFlushCb, h } from '@vue/runtime-core';
+export {
+  watch,
+  queuePreFlushCb,
+  h,
+  Fragment,
+  Text,
+  Comment,
+  VNode,
+  isVNode,
+  createVNode,
+  normalizeChildren
+} from '@vue/runtime-core';

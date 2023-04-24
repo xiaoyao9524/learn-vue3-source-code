@@ -1,4 +1,14 @@
-import { ShapeFlags, isArray, isFunction, isString } from '@vue/shared';
+import {
+  ShapeFlags,
+  isArray,
+  isFunction,
+  isObject,
+  isString
+} from '@vue/shared';
+
+export const Fragment = Symbol('Fragment');
+export const Text = Symbol('Text');
+export const Comment = Symbol('Comment');
 
 export interface VNode {
   __v_isVNode: true;
@@ -13,7 +23,11 @@ export const isVNode = (value: any): value is VNode => {
 };
 
 export function createVNode(type: any, props?: any, children?: any): VNode {
-  const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : 0;
+  const shapeFlag = isString(type)
+    ? ShapeFlags.ELEMENT
+    : isObject(type)
+    ? ShapeFlags.STATEFUL_COMPONENT
+    : 0; // 第一次计算shapeFlag，本次为dom类型的计算
 
   return createBaseVNode(type, props, children, shapeFlag);
 }
@@ -23,7 +37,7 @@ function createBaseVNode(type, props, children, shapeFlag): VNode {
     __v_isVNode: true,
     type,
     props,
-    shapeFlag,
+    shapeFlag, // 表示当前vnode的类型
     children
   } as VNode;
 
@@ -32,13 +46,31 @@ function createBaseVNode(type, props, children, shapeFlag): VNode {
   return vnode;
 }
 
+/**
+ * code                                                       shapeFlag      type
+ * h(component)                                               4              {render: f()}
+ * h(Vue.Text, '这是一个文本节点')                              8              Symbol(Text)
+ * h(Vue.Comment, '这是一个注释节点')                           8              Symbol(Comment)
+ * h(Fragment, '这是一个碎片节点')                              8              Symbol(Fragment)
+ * h('div', 'hello render')                                    9             'div'
+ * h(Vue.Fragment, [...]);                                     16             Symbol(Fragment)
+ * h('div', [h('p', 'p1'), h('p', 'p2')])                      17            'div'
+ */
+
+/**
+ * 正常化children，主要是根据children类型的不同计算最终vnode的shapeFlag
+ * @param vnode 虚拟dom
+ * @param children children
+ */
 export function normalizeChildren(vnode: VNode, children: unknown) {
   let type = 0;
 
   const { shapeFlag } = vnode;
-  if (children === null) {
+
+  if (children == null) {
     children = null;
   } else if (isArray(children)) {
+    type = ShapeFlags.ARRAY_CHILDREN;
   } else if (typeof children === 'object') {
   } else if (isFunction(children)) {
   } else {
@@ -48,7 +80,7 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
   }
 
   vnode.children = children;
-  vnode.shapeFlag |= type;
+  vnode.shapeFlag |= type; // 第二次计算shapeFlag，本次是计算children的类型
 }
 
 /**
