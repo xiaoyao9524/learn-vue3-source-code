@@ -10,6 +10,10 @@ export const isFunction = (val: unknown): val is Function => {
   return typeof val === 'function';
 };
 
+export const isString = (val: unknown): val is string => {
+  return typeof val === 'string';
+};
+
 export const objectToString = Object.prototype.toString;
 
 export const toTypeString = (val: unknown): string => {
@@ -35,3 +39,5 @@ export const NOOP = () => {};
 export const extend = Object.assign;
 
 export const EMPTY_OBJ: { readonly [key: string]: any } = {};
+
+export * from './shapeFlags';
