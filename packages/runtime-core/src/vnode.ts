@@ -23,6 +23,14 @@ export const isVNode = (value: any): value is VNode => {
 };
 
 export function createVNode(type: any, props?: any, children?: any): VNode {
+  if (props) {
+    const { class: klass } = props;
+
+    if (klass && !isString(klass)) {
+      props.class = normalizeClass(klass);
+    }
+  }
+
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
     : isObject(type)
@@ -95,3 +103,30 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
  * 8 的二进制为 1000
  * 按位或结果为 1001，所以结果为9
  */
+
+/**
+ * 标准化class，将class（可能是string、array或对象）转化成字符串
+ * @param value class对象
+ * @returns class字符串
+ */
+export function normalizeClass(value: unknown): string {
+  let res = '';
+
+  if (isString(value)) {
+    res = value;
+  } else if (isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      let normalized = normalizeClass(value[i]);
+
+      res += normalized + ' ';
+    }
+  } else if (isObject(value)) {
+    for (const name in value) {
+      if (value[name]) {
+        res += name + ' ';
+      }
+    }
+  }
+
+  return res.trim();
+}

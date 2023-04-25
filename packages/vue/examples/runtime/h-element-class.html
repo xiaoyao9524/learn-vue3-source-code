@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>h-element-class example</title>
+  <script src="../../../vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    const { h } = Vue
+
+    // <div :class="{red: true}">增强的class</div>
+    const vnode1 = h('div', {
+      class: {
+        'red': true,
+        'blue': true
+      }
+    }, '增强的class')
+
+    console.log('vnode1: ', vnode1);
+
+
+    const vnode2 = h('div', {
+      class: ['red', { 'blue': true }]
+    }, '增强的class')
+
+    console.log('vnode2: ', vnode2);
+
+  </script>
+</body>
+
+</html>
