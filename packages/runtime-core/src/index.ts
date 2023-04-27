@@ -10,3 +10,4 @@ export {
   createVNode,
   normalizeChildren
 } from './vnode';
+export { createRenderer } from './renderer';
