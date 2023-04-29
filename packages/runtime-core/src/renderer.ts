@@ -125,16 +125,26 @@ function baseCreateRenderer(options: RendererOptions) {
   const patchElement = (n1: VNode, n2: VNode) => {
     const el = (n2.el = n1.el);
 
-    let { patchFlag } = n2;
+    let {
+      /*patchFlag*/
+    } = n2;
 
-    patchFlag |= n1.patchFlag & PatchFlags.FULL_PROPS;
+    // patchFlag |= n1.patchFlag & PatchFlags.FULL_PROPS;
 
     const oldProps = n1.props || EMPTY_OBJ;
     const newProps = n2.props || EMPTY_OBJ;
 
     patchChildren(n1, n2, el);
+
+    patchProps(el, n2, oldProps, newProps);
   };
 
+  /**
+   * 为children打补丁
+   * @param n1 旧的vnode
+   * @param n2 新的vnode
+   * @param container vnode对应的真实 element
+   */
   const patchChildren = (n1: VNode, n2: VNode, container: Element) => {
     const c1 = n1 && n1.children;
     const prevShapeFlag = n1 ? n1.shapeFlag : 0;
@@ -144,7 +154,41 @@ function baseCreateRenderer(options: RendererOptions) {
     const { shapeFlag, props } = n2;
 
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      hostSetElementText(container, c2 as string);
+      if (c2 !== c1) {
+        hostSetElementText(container, c2 as string);
+      }
+    }
+  };
+
+  /**
+   * 为props打补丁
+   * @param el 指定的element
+   * @param n2 新的vnode
+   * @param oldProps 旧的props
+   * @param newProps 新的props
+   */
+  const patchProps = (el: Element, n2: VNode, oldProps: any, newProps: any) => {
+    if (oldProps !== newProps) {
+      for (const key in newProps) {
+        const next = newProps[key];
+        const prev = oldProps[key];
+
+        if (next !== prev && key !== 'value') {
+          hostPatchProp(el, key, prev, next);
+        }
+
+        if (oldProps !== EMPTY_OBJ) {
+          for (const key in oldProps) {
+            if (!(key in newProps)) {
+              hostPatchProp(el, key, oldProps[key], null);
+            }
+          }
+        }
+
+        if ('value' in newProps) {
+          hostPatchProp(el, 'value', oldProps.value, newProps.value);
+        }
+      }
     }
   };
 
