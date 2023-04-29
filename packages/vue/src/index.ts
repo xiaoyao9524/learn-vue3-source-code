@@ -11,3 +11,4 @@ export {
   createVNode,
   normalizeChildren
 } from '@vue/runtime-core';
+export { render } from '@vue/runtime-dom';

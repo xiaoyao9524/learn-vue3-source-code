@@ -17,6 +17,7 @@ export interface VNode {
   props: any;
   children: any;
   shapeFlag: number;
+  patchFlag: number;
   el: any;
 }
 
@@ -47,7 +48,8 @@ function createBaseVNode(type, props, children, shapeFlag): VNode {
     __v_isVNode: true,
     type,
     props,
-    shapeFlag, // 表示当前vnode的类型
+    shapeFlag, // 根据children类型不同计算而来
+    patchFlag: 0,
     children
   } as VNode;
 

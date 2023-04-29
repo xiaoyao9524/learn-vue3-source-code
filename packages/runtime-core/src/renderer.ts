@@ -1,18 +1,50 @@
-import { ShapeFlags } from '@vue/shared';
-import { VNode, Text } from './vnode';
+import { ShapeFlags, PatchFlags, EMPTY_OBJ } from '@vue/shared';
+import { VNode, Text, Comment, Fragment } from './vnode';
+export interface RendererOptions {
+  /**
+   * 为指定的 element 的props打补丁
+   * @param el 指定的元素
+   * @param key 指定的props key
+   * @param prevValue 上一次的值
+   * @param nextValue 本次的值
+   */
+  patchProp(el: Element, key: string, prevValue: any, nextValue: any): void;
+  /**
+   * 为指定的 element 设置文本
+   * @param el 指定的element
+   * @param text 要设置的文本
+   */
+  setElementText(el: Element, text: string): void;
+  /**
+   * 插入节点
+   * @param child 往parent里插入的节点
+   * @param parent child将要插入这个节点
+   * @param anchor 将要插在这个节点之前
+   */
+  insert(child: Node, parent: Element, anchor?: Node): void;
+  /**
+   * 创建 element
+   * @param tag dom标签
+   * @param isSVG 是否是svg
+   * @param props 如果是select元素那么根据props.multiple判断是否添加'multiple'属性
+   * @returns 创建的真实dom
+   */
+  createElement(tag: string, isSVG: boolean, props: any): Element;
+}
 
-export function createRenderer(options: any) {
+export function createRenderer(options: RendererOptions) {
   return baseCreateRenderer(options);
 }
 
-function baseCreateRenderer(options: any) {
+function baseCreateRenderer(options: RendererOptions) {
   const {
+    insert: hostInsert,
+    patchProp: hostPatchProp,
     createElement: hostCreateElement,
-    setElementText: hostSetElementText,
-    cloneNode: hostCloneNode
+    setElementText: hostSetElementText
   } = options;
   /**
-   * 对比两个虚拟dom
+   * 为新的虚拟dom打补丁
    * @param n1 旧的vnode
    * @param n2 新的vnode
    * @param container 容器
@@ -23,10 +55,15 @@ function baseCreateRenderer(options: any) {
     }
 
     const { type, shapeFlag } = n2;
+
     switch (type) {
       case Text: {
         break;
       }
+      case Comment:
+        break;
+      case Fragment:
+        break;
       default: {
         if (shapeFlag & ShapeFlags.ELEMENT) {
           processElement(n1, n2, container);
@@ -42,9 +79,11 @@ function baseCreateRenderer(options: any) {
    * @param container 容器
    */
   const processElement = (n1: VNode | null, n2: VNode, container) => {
-    if (n1 === null) {
+    if (n1 == null) {
       // 说明之前没有元素，属于第一次挂载
       mountElement(n2, container);
+    } else {
+      patchElement(n1, n2);
     }
   };
 
@@ -58,19 +97,60 @@ function baseCreateRenderer(options: any) {
 
     const { type, props, shapeFlag } = vnode;
 
-    if (vnode.el && hostCloneNode !== undefined) {
+    if (vnode.el) {
     } else {
+      // 1.创建 element
       el = vnode.el = hostCreateElement(type, isSVG, props);
+
+      // 如果children是文本的话，去设置文本
+      // 2.设置文本
+      if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        hostSetElementText(el, vnode.children as string);
+      } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      }
+
+      // 3.设置 props
+      if (props) {
+        for (let key in props) {
+          hostPatchProp(el, key, null, props[key]);
+        }
+      }
+      // 4.插入 element
+      hostInsert(el, container);
     }
 
-    // 如果children是文本的话，去设置文本
+    container._vnode = vnode;
+  };
+
+  const patchElement = (n1: VNode, n2: VNode) => {
+    const el = (n2.el = n1.el);
+
+    let { patchFlag } = n2;
+
+    patchFlag |= n1.patchFlag & PatchFlags.FULL_PROPS;
+
+    const oldProps = n1.props || EMPTY_OBJ;
+    const newProps = n2.props || EMPTY_OBJ;
+
+    patchChildren(n1, n2, el);
+  };
+
+  const patchChildren = (n1: VNode, n2: VNode, container: Element) => {
+    const c1 = n1 && n1.children;
+    const prevShapeFlag = n1 ? n1.shapeFlag : 0;
+
+    const c2 = n2 && n2.children;
+
+    const { shapeFlag, props } = n2;
+
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      hostSetElementText(el, vnode.children as string);
+      hostSetElementText(container, c2 as string);
     }
   };
 
   const render = (vnode: VNode, container: any) => {
     if (vnode === null) {
+      // TODO: 卸载
     } else {
       patch(container._vnode || null, vnode, container);
     }

@@ -36,10 +36,18 @@ export const isPiniaObject = (val: unknown): val is object => {
 
 export const NOOP = () => {};
 
+/**
+ * 合并两个对象
+ */
 export const extend = Object.assign;
 
 export const EMPTY_OBJ: { readonly [key: string]: any } = {};
 
+const onRe = /^on[a-z]/;
+export const isOn = (key: string) => onRe.test(key);
+
 export * from './shapeFlags';
 
 export * from './normalizeProps';
+
+export * from './patchFlags';

@@ -13,6 +13,10 @@ export const render = (...args) => {
   return ensureRender().render(...args);
 };
 
+/**
+ * 确保render函数被创建
+ * @returns render函数
+ */
 function ensureRender() {
-  return renderer || createRenderer(rendererOptions);
+  return renderer || (renderer = createRenderer(rendererOptions));
 }
