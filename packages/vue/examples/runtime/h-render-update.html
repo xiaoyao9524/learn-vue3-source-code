@@ -33,6 +33,12 @@
       render(vnode2, document.querySelector('#app'));
     }, 2000)
 
+    setTimeout(() => {
+      const vnode3 = h('div', 'update-2')
+
+      render(vnode3, document.querySelector('#app'));
+    }, 4000)
+
   </script>
 </body>
 

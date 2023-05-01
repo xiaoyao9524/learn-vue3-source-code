@@ -122,6 +122,11 @@ function baseCreateRenderer(options: RendererOptions) {
     container._vnode = vnode;
   };
 
+  /**
+   * 修补 Element
+   * @param n1 旧的VNode
+   * @param n2 新的VNode
+   */
   const patchElement = (n1: VNode, n2: VNode) => {
     const el = (n2.el = n1.el);
 
@@ -134,28 +139,74 @@ function baseCreateRenderer(options: RendererOptions) {
     const oldProps = n1.props || EMPTY_OBJ;
     const newProps = n2.props || EMPTY_OBJ;
 
-    patchChildren(n1, n2, el);
+    patchChildren(n1, n2, el, null);
 
     patchProps(el, n2, oldProps, newProps);
   };
 
   /**
-   * 为children打补丁
+   * 修补 children
    * @param n1 旧的vnode
    * @param n2 新的vnode
    * @param container vnode对应的真实 element
+   * @param anchor 锚点
    */
-  const patchChildren = (n1: VNode, n2: VNode, container: Element) => {
+  const patchChildren = (
+    n1: VNode,
+    n2: VNode,
+    container: Element,
+    anchor?: Element | null
+  ) => {
     const c1 = n1 && n1.children;
     const prevShapeFlag = n1 ? n1.shapeFlag : 0;
-
     const c2 = n2 && n2.children;
 
     const { shapeFlag, props } = n2;
 
+    /**
+     * children 有三种情况：
+     *    1.text children
+     *    2.array children
+     *    3.无chilaren
+     */
+
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 走这里说明新节点是text children
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 旧节点是array children
+        // 新节点是text children
+        // TODO: 执行卸载旧子节点操作
+      }
+      // 如果本次和上次不一样，那么直接去挂载新的文本节点
       if (c2 !== c1) {
         hostSetElementText(container, c2 as string);
+      }
+    } else {
+      // 走这里说明新节点是array children或无children
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 走这里说明旧节点是array children
+        if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          // 走这里说明新旧节点都是array children
+          // TODO: diff
+        } else {
+          // 旧节点是array children
+          // 走这里说明新节点是空
+          // TODO: 直接卸载节点
+        }
+      } else {
+        // 旧节点是：text children、空节点
+        // 新节点是：array children、空children
+        if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+          // 旧节点：textchildren
+          // 新节点：array children、空children
+          // 执行：删除旧节点的text children
+          hostSetElementText(container, '');
+        }
+        if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          // 旧节点是：text children、空节点
+          // 新节点是：array children
+          // TODO: 单独新子节点的挂载
+        }
       }
     }
   };
@@ -176,18 +227,19 @@ function baseCreateRenderer(options: RendererOptions) {
         if (next !== prev && key !== 'value') {
           hostPatchProp(el, key, prev, next);
         }
+      }
 
-        if (oldProps !== EMPTY_OBJ) {
-          for (const key in oldProps) {
-            if (!(key in newProps)) {
-              hostPatchProp(el, key, oldProps[key], null);
-            }
+      // 删除存在于旧prop但是不存在于新prop的属性
+      if (oldProps !== EMPTY_OBJ) {
+        for (const key in oldProps) {
+          if (!(key in newProps)) {
+            hostPatchProp(el, key, oldProps[key], null);
           }
         }
+      }
 
-        if ('value' in newProps) {
-          hostPatchProp(el, 'value', oldProps.value, newProps.value);
-        }
+      if ('value' in newProps) {
+        hostPatchProp(el, 'value', oldProps.value, newProps.value);
       }
     }
   };
