@@ -15,6 +15,16 @@ export const nodeOps: Omit<RendererOptions, 'patchProp'> = {
     parent.insertBefore(child, anchor || null);
   },
   /**
+   * 删除一个element
+   * @param el 要删除的element
+   */
+  remove: (el: Element) => {
+    const parent = el.parentNode;
+    if (parent) {
+      parent.removeChild(el);
+    }
+  },
+  /**
    * 根据tag创建真实dom
    * @param tag dom标签
    * @param isSVG 是否是svg

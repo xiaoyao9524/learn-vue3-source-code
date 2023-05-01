@@ -1,6 +1,26 @@
 import { ShapeFlags, PatchFlags, EMPTY_OBJ } from '@vue/shared';
-import { VNode, Text, Comment, Fragment } from './vnode';
+import { VNode, Text, Comment, Fragment, isSameVNodeType } from './vnode';
 export interface RendererOptions {
+  /**
+   * 插入节点
+   * @param child 往parent里插入的节点
+   * @param parent child将要插入这个节点
+   * @param anchor 将要插在这个节点之前
+   */
+  insert(child: Node, parent: Element, anchor?: Node): void;
+  /**
+   * 删除一个element
+   * @param el 要删除的element
+   */
+  remove(el: Element): void;
+  /**
+   * 创建 element
+   * @param tag dom标签
+   * @param isSVG 是否是svg
+   * @param props 如果是select元素那么根据props.multiple判断是否添加'multiple'属性
+   * @returns 创建的真实dom
+   */
+  createElement(tag: string, isSVG: boolean, props: any): Element;
   /**
    * 为指定的 element 的props打补丁
    * @param el 指定的元素
@@ -15,21 +35,6 @@ export interface RendererOptions {
    * @param text 要设置的文本
    */
   setElementText(el: Element, text: string): void;
-  /**
-   * 插入节点
-   * @param child 往parent里插入的节点
-   * @param parent child将要插入这个节点
-   * @param anchor 将要插在这个节点之前
-   */
-  insert(child: Node, parent: Element, anchor?: Node): void;
-  /**
-   * 创建 element
-   * @param tag dom标签
-   * @param isSVG 是否是svg
-   * @param props 如果是select元素那么根据props.multiple判断是否添加'multiple'属性
-   * @returns 创建的真实dom
-   */
-  createElement(tag: string, isSVG: boolean, props: any): Element;
 }
 
 export function createRenderer(options: RendererOptions) {
@@ -39,6 +44,7 @@ export function createRenderer(options: RendererOptions) {
 function baseCreateRenderer(options: RendererOptions) {
   const {
     insert: hostInsert,
+    remove: hostRemove,
     patchProp: hostPatchProp,
     createElement: hostCreateElement,
     setElementText: hostSetElementText
@@ -49,9 +55,15 @@ function baseCreateRenderer(options: RendererOptions) {
    * @param n2 新的vnode
    * @param container 容器
    */
-  const patch = (n1: VNode, n2: VNode, container: any) => {
+  const patch = (n1: VNode | null, n2: VNode, container: any) => {
     if (n1 === n2) {
       return;
+    }
+
+    // 如果判断旧的节点和新的节点type或key不一样时，说明需要销毁重建，将旧的节点删除
+    if (n1 && !isSameVNodeType(n1, n2)) {
+      unmount(n1, true);
+      n1 = null;
     }
 
     const { type, shapeFlag } = n2;
@@ -244,9 +256,32 @@ function baseCreateRenderer(options: RendererOptions) {
     }
   };
 
+  const unmount = (vnode: VNode, doRemove: boolean = false) => {
+    const { type, props, shapeFlag } = vnode;
+
+    if (shapeFlag & ShapeFlags.COMPONENT) {
+      // 卸载组件
+    } else {
+      if (doRemove) {
+        remove(vnode);
+      }
+    }
+  };
+
+  const remove = (vnode: VNode) => {
+    const { el } = vnode;
+    const preformRemove = () => {
+      hostRemove(el!);
+    };
+
+    preformRemove();
+  };
+
   const render = (vnode: VNode, container: any) => {
     if (vnode === null) {
-      // TODO: 卸载
+      if (container._vnode) {
+        unmount(container._vnode, true);
+      }
     } else {
       patch(container._vnode || null, vnode, container);
     }

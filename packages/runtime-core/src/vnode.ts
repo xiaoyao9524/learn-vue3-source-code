@@ -15,6 +15,7 @@ export interface VNode {
   __v_isVNode: true;
   type: any;
   props: any;
+  key?: string | number;
   children: any;
   shapeFlag: number;
   patchFlag: number;
@@ -23,6 +24,16 @@ export interface VNode {
 
 export const isVNode = (value: any): value is VNode => {
   return value ? value.__v_isVNode === true : false;
+};
+
+/**
+ * 判断两个vnode是否是同一类型
+ * @param n1 旧的vnode
+ * @param n2 新的vnode
+ * @returns true代表是同一类型，直接修改原dom，否则需要销毁重建
+ */
+export const isSameVNodeType = (n1: VNode, n2: VNode): boolean => {
+  return n1.type === n2.type && n1.key === n2.key;
 };
 
 export function createVNode(type: any, props?: any, children?: any): VNode {

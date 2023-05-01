@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>render-element-remove</title>
+  <script src="../../../vue/dist/vue.js"></script>
+  <style>
+    .active {
+      color: red;
+    }
+
+    p {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <h3>元素的删除</h3>
+  <div id="app"></div>
+  <script>
+    const { h, render } = Vue
+
+    const vnode = h('div', {
+      class: 'test'
+    }, 'hello render')
+
+    render(vnode, document.querySelector('#app'));
+
+    setTimeout(() => {
+      render(null, document.querySelector('#app'));
+    }, 2000)
+
+  </script>
+</body>
+
+</html>
