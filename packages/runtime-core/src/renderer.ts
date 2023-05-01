@@ -124,7 +124,13 @@ function baseCreateRenderer(options: RendererOptions) {
       // 3.设置 props
       if (props) {
         for (let key in props) {
-          hostPatchProp(el, key, null, props[key]);
+          if (key !== 'value') {
+            hostPatchProp(el, key, null, props[key]);
+          }
+        }
+
+        if ('value' in props) {
+          hostPatchProp(el, 'value', null, props.value);
         }
       }
       // 4.插入 element

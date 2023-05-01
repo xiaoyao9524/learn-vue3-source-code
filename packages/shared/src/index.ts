@@ -51,3 +51,5 @@ export * from './shapeFlags';
 export * from './normalizeProps';
 
 export * from './patchFlags';
+
+export * from './domAttrConfig';
