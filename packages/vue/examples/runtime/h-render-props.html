@@ -11,13 +11,14 @@
 
 <body>
   <div id="app"></div>
+
   <script>
     const { h, render } = Vue
 
     const vnode = h('textarea', {
-      class: 'test-class',
-      value: 'textarea value',
-      type: 'text'
+      class: 'test-class', // el.className = 'xxx'
+      value: 'textarea value', // el[key] = 'xxx'
+      type: 'text' // el.setAttribute('type', 'xxx')
     })
 
     render(vnode, document.querySelector('#app'))

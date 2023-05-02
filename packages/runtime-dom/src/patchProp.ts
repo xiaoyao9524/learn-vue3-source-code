@@ -1,7 +1,8 @@
 import { isOn } from '@vue/shared';
 import { patchClass } from './modules/class';
-import { patchAttr } from './modules/attr';
-import { patchDOMProp } from './modules/prop';
+import { patchDOMProp } from './modules/props';
+import { patchAttr } from './modules/attrs';
+import { patchStyle } from './modules/style';
 
 /**
  * 把单个prop添加到元素上
@@ -19,6 +20,7 @@ export const patchProp: any = (
   if (key === 'class') {
     patchClass(el, nextValue);
   } else if (key === 'style') {
+    patchStyle(el, prevValue, nextValue);
   } else if (isOn(key)) {
   } else {
     if (shouldSetAsProp(el, key)) {
@@ -38,8 +40,17 @@ export const patchProp: any = (
  * @returns boolean，是否属于prop
  */
 function shouldSetAsProp(el: Element, key: string): boolean {
-  if (el.tagName === 'TEXTAREA' && key === 'type') {
+  if (key === 'form') {
     return false;
   }
+
+  if (key === 'list' && el.tagName === 'INPUT') {
+    return false;
+  }
+
+  if (key === 'type' && el.tagName === 'TEXTAREA') {
+    return false;
+  }
+
   return key in el;
 }

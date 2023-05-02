@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>h-render-style</title>
+  <script src="../../../vue/dist/vue.js"></script>
+  <style>
+    .test {
+      width: 300px;
+      height: 30px;
+      /* -webkit-border-radius: 16px; */
+    }
+
+    .test-input::-webkit-input-placeholder {
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+  <h3>style的挂载</h3>
+  <div id="app"></div>
+  <script>
+    const { h, render } = Vue
+
+    const vnode = h('input', {
+      class: {
+        test: true
+      },
+      type: 'text',
+      placeholder: '请输入文本',
+      // style: {
+      //   color: ['red', 'blue', 'green'],
+      //   'font-size': '24px',
+      //   '-webkit-border-radius': '16px'
+      // },
+      style: 'color: green; font-size: 24px; border-radius: 16px;',
+    }, '你好，世界')
+
+    render(vnode, document.querySelector('#app'))
+  </script>
+</body>
+
+</html>
