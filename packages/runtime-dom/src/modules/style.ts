@@ -11,6 +11,15 @@ export function patchStyle(el: Element, prev: Style, next: Style) {
     for (let key in next) {
       setStyle(style, key, next[key]);
     }
+
+    // 判断有没有之前有的属性现在没有了
+    if (prev && !isString(prev)) {
+      for (let key in prev) {
+        if (next[key] == null) {
+          setStyle(style, key, '');
+        }
+      }
+    }
   } else {
     const currentDisplay = style.display;
 

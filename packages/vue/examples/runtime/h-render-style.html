@@ -31,16 +31,36 @@
         test: true
       },
       type: 'text',
+      value: '你好，世界',
       placeholder: '请输入文本',
-      // style: {
-      //   color: ['red', 'blue', 'green'],
-      //   'font-size': '24px',
-      //   '-webkit-border-radius': '16px'
-      // },
-      style: 'color: green; font-size: 24px; border-radius: 16px;',
+      style: {
+        color: ['red', 'blue', 'green'],
+        // 'font-size': '24px',
+        '-webkit-border-radius': '16px'
+      },
+      // style: 'color: green; font-size: 24px; border-radius: 16px;',
     }, '你好，世界')
 
     render(vnode, document.querySelector('#app'))
+
+    setTimeout(() => {
+      const vnode = h('input', {
+        class: {
+          test: true
+        },
+        type: 'text',
+        value: '修改了style',
+        placeholder: '请输入文本',
+        style: {
+          color: 'red',
+          'font-size': '24px',
+          fontWeight: 'bold'
+        },
+        // style: 'color: green; font-size: 24px; border-radius: 16px;',
+      }, '修改了style')
+
+      render(vnode, document.querySelector('#app'))
+    }, 2000)
   </script>
 </body>
 
