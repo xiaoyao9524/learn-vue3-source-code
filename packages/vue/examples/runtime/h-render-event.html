@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>h-render-event</title>
+  <script src="../../../vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <h3>事件的挂载</h3>
+  <div id="app"></div>
+  <script>
+    const { h, render } = Vue
+
+    const vnode = h('button', {
+      onClick (e) {
+        console.log('click: ', e)
+      }
+    }, 'click')
+
+    render(vnode, document.querySelector('#app'))
+
+    setTimeout(() => {
+      const vnode2 = h('button', {
+        onClick (e) {
+          console.log('事件已修改')
+        }
+        // onDblclick (e) {
+        //   console.log('dblclick: ', e)
+        // }
+      }, '事件已修改')
+
+      render(vnode2, document.querySelector('#app'))
+    }, 2000)
+  </script>
+</body>
+
+</html>

@@ -43,8 +43,15 @@ export const extend = Object.assign;
 
 export const EMPTY_OBJ: { readonly [key: string]: any } = {};
 
-const onRe = /^on[a-z]/;
+const onRe = /^on[^a-z]/;
 export const isOn = (key: string) => onRe.test(key);
+
+/**
+ * 判断一个事件的key是否是v-model编译后的事件
+ * @param key 要判断的key
+ * @returns boolean
+ */
+export const isModelListener = (key: string) => key.startsWith('onUpdate:');
 
 /**
  * 创建一个缓存字符串的对象
@@ -67,6 +74,16 @@ const camelizeRe = /-(\w)/g;
 // 将一个字符串转为驼峰模式
 export const camelize = cacheStringFunction((str: string): string => {
   return str.replace(camelizeRe, (_, c) => (c ? c.toUpperCase() : ''));
+});
+
+const hyphenateRe = /\B([A-Z])/g;
+/**
+ * 将一个字符串（事件名称）转化成小写并且使用'-'分隔的
+ * @param str 要转化的字符串
+ * @returns 转化后的字符串
+ */
+export const hyphenate = cacheStringFunction((str: string) => {
+  return str.replace(hyphenateRe, '-$1').toLowerCase();
 });
 
 export * from './shapeFlags';

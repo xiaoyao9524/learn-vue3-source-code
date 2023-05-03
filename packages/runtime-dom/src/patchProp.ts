@@ -1,8 +1,9 @@
-import { isOn } from '@vue/shared';
+import { isModelListener, isOn } from '@vue/shared';
 import { patchClass } from './modules/class';
 import { patchDOMProp } from './modules/props';
 import { patchAttr } from './modules/attrs';
 import { patchStyle } from './modules/style';
+import { patchEvent } from './modules/event';
 
 /**
  * 把单个prop添加到元素上
@@ -22,6 +23,10 @@ export const patchProp: any = (
   } else if (key === 'style') {
     patchStyle(el, prevValue, nextValue);
   } else if (isOn(key)) {
+    // 排除v-model编译后的事件
+    if (!isModelListener(key)) {
+      patchEvent(el, key, prevValue, nextValue);
+    }
   } else {
     if (shouldSetAsProp(el, key)) {
       // 执行修改prop
