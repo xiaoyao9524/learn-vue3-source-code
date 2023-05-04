@@ -41,6 +41,20 @@ export const nodeOps: Omit<RendererOptions, 'patchProp'> = {
     return el;
   },
   /**
+   * 创建一个文本节点
+   * @param text 文本
+   * @returns 创建的文本节点
+   */
+  createText: (text: string) => doc.createTextNode(text),
+  /**
+   * 为一个elemnt设置nodeValue
+   * @param parent
+   * @param text
+   */
+  setText: (node: Element, text: string) => {
+    node.nodeValue = text;
+  },
+  /**
    * 为指定的 element 设置文本
    * @param el 指定的element
    * @param text 要设置的文本

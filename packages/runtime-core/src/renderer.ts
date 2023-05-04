@@ -22,6 +22,18 @@ export interface RendererOptions {
    */
   createElement(tag: string, isSVG: boolean, props: any): Element;
   /**
+   * 创建一个文本节点
+   * @param text 文本
+   * @returns 创建的文本节点
+   */
+  createText(text: string): Node;
+  /**
+   * 为一个elemnt设置nodeValue
+   * @param parent
+   * @param text
+   */
+  setText(parent: Element, text: string): void;
+  /**
    * 为指定的 element 的props打补丁
    * @param el 指定的元素
    * @param key 指定的props key
@@ -47,6 +59,8 @@ function baseCreateRenderer(options: RendererOptions) {
     remove: hostRemove,
     patchProp: hostPatchProp,
     createElement: hostCreateElement,
+    createText: hostCreateText,
+    setText: hostSetText,
     setElementText: hostSetElementText
   } = options;
   /**
@@ -70,6 +84,7 @@ function baseCreateRenderer(options: RendererOptions) {
 
     switch (type) {
       case Text: {
+        processText(n1, n2, container);
         break;
       }
       case Comment:
@@ -283,6 +298,34 @@ function baseCreateRenderer(options: RendererOptions) {
     preformRemove();
   };
 
+  /**
+   * 处理新节点是Text的情况
+   * 对比新旧vnode执行不同的逻辑
+   * @param n1 旧的vnode
+   * @param n2 新的vnode
+   * @param container 容器
+   * @param anchor 锚点
+   */
+  const processText = (
+    n1: VNode | null,
+    n2: VNode,
+    container: Element,
+    anchor?: Element
+  ) => {
+    if (n1 == null) {
+      hostInsert(
+        (n2.el = hostCreateText(n2.children as string)),
+        container,
+        anchor
+      );
+    } else {
+      const el = (n2.el = n1.el!);
+      if (n1.children !== n2.children) {
+        hostSetText(el, n2.children as string);
+      }
+    }
+  };
+
   const render = (vnode: VNode, container: any) => {
     if (vnode === null) {
       if (container._vnode) {
@@ -291,6 +334,7 @@ function baseCreateRenderer(options: RendererOptions) {
     } else {
       patch(container._vnode || null, vnode, container);
     }
+    container._vnode = vnode;
   };
 
   return {
