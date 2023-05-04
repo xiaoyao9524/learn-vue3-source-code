@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>h-render-comment</title>
+  <script src="../../../vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    // 注释节点不支持更新逻辑！
+    const { h, render, Comment } = Vue
+
+    const vnode = h(Comment, '这是一个注释')
+
+    render(vnode, document.querySelector('#app'));
+  </script>
+</body>
+
+</html>

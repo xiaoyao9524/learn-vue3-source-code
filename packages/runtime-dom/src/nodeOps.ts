@@ -11,7 +11,7 @@ export const nodeOps: Omit<RendererOptions, 'patchProp'> = {
    * @param parent child将要插入这个节点
    * @param anchor 将要插在这个节点之前
    */
-  insert: (child: Node, parent: Element, anchor?: Node) => {
+  insert: (child: Node, parent: Element, anchor?: Node | null | undefined) => {
     parent.insertBefore(child, anchor || null);
   },
   /**
@@ -46,6 +46,12 @@ export const nodeOps: Omit<RendererOptions, 'patchProp'> = {
    * @returns 创建的文本节点
    */
   createText: (text: string) => doc.createTextNode(text),
+  /**
+   * 创建一个注释节点
+   * @param text 文本
+   * @returns 创建的注释节点
+   */
+  createComment: (text: string) => doc.createComment(text),
   /**
    * 为一个elemnt设置nodeValue
    * @param parent

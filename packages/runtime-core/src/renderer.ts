@@ -7,7 +7,7 @@ export interface RendererOptions {
    * @param parent child将要插入这个节点
    * @param anchor 将要插在这个节点之前
    */
-  insert(child: Node, parent: Element, anchor?: Node): void;
+  insert(child: Node, parent: Element, anchor?: Node | null | undefined): void;
   /**
    * 删除一个element
    * @param el 要删除的element
@@ -27,6 +27,12 @@ export interface RendererOptions {
    * @returns 创建的文本节点
    */
   createText(text: string): Node;
+  /**
+   * 创建一个注释节点
+   * @param text 文本
+   * @returns 创建的注释节点
+   */
+  createComment(text: string): Node;
   /**
    * 为一个elemnt设置nodeValue
    * @param parent
@@ -60,6 +66,7 @@ function baseCreateRenderer(options: RendererOptions) {
     patchProp: hostPatchProp,
     createElement: hostCreateElement,
     createText: hostCreateText,
+    createComment: hostCreateComment,
     setText: hostSetText,
     setElementText: hostSetElementText
   } = options;
@@ -69,7 +76,12 @@ function baseCreateRenderer(options: RendererOptions) {
    * @param n2 新的vnode
    * @param container 容器
    */
-  const patch = (n1: VNode | null, n2: VNode, container: any) => {
+  const patch = (
+    n1: VNode | null,
+    n2: VNode,
+    container: any,
+    anchor: Element | null | undefined = null
+  ) => {
     if (n1 === n2) {
       return;
     }
@@ -84,10 +96,11 @@ function baseCreateRenderer(options: RendererOptions) {
 
     switch (type) {
       case Text: {
-        processText(n1, n2, container);
+        processText(n1, n2, container, anchor);
         break;
       }
       case Comment:
+        processCommentNode(n1, n2, container, anchor);
         break;
       case Fragment:
         break;
@@ -310,7 +323,7 @@ function baseCreateRenderer(options: RendererOptions) {
     n1: VNode | null,
     n2: VNode,
     container: Element,
-    anchor?: Element
+    anchor: Element | null | undefined = null
   ) => {
     if (n1 == null) {
       hostInsert(
@@ -323,6 +336,20 @@ function baseCreateRenderer(options: RendererOptions) {
       if (n1.children !== n2.children) {
         hostSetText(el, n2.children as string);
       }
+    }
+  };
+
+  const processCommentNode = (
+    n1: VNode | null,
+    n2: VNode,
+    container: Element,
+    anchor?: Element | null | undefined
+  ) => {
+    if (n1 == null) {
+      hostInsert((n2.el = hostCreateComment(n2.children)), container, anchor);
+    } else {
+      // 注释节点不支持动态更新！
+      n2.el = n1.el;
     }
   };
 
