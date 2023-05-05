@@ -1,5 +1,13 @@
 import { ShapeFlags, PatchFlags, EMPTY_OBJ } from '@vue/shared';
-import { VNode, Text, Comment, Fragment, isSameVNodeType } from './vnode';
+import {
+  VNode,
+  Text,
+  Comment,
+  Fragment,
+  isSameVNodeType,
+  RenderNode,
+  normalizeVNode
+} from './vnode';
 export interface RendererOptions {
   /**
    * 插入节点
@@ -103,6 +111,7 @@ function baseCreateRenderer(options: RendererOptions) {
         processCommentNode(n1, n2, container, anchor);
         break;
       case Fragment:
+        processFragment(n1, n2, container, anchor);
         break;
       default: {
         if (shapeFlag & ShapeFlags.ELEMENT) {
@@ -198,8 +207,8 @@ function baseCreateRenderer(options: RendererOptions) {
    * @param anchor 锚点
    */
   const patchChildren = (
-    n1: VNode,
-    n2: VNode,
+    n1: RenderNode,
+    n2: RenderNode,
     container: Element,
     anchor?: Element | null
   ) => {
@@ -243,7 +252,7 @@ function baseCreateRenderer(options: RendererOptions) {
         // 旧节点是：text children、空节点
         // 新节点是：array children、空children
         if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
-          // 旧节点：textchildren
+          // 旧节点：text children
           // 新节点：array children、空children
           // 执行：删除旧节点的text children
           hostSetElementText(container, '');
@@ -350,6 +359,38 @@ function baseCreateRenderer(options: RendererOptions) {
     } else {
       // 注释节点不支持动态更新！
       n2.el = n1.el;
+    }
+  };
+
+  const processFragment = (
+    n1: RenderNode | null,
+    n2: RenderNode,
+    container: Element,
+    anchor?: Element | null | undefined
+  ) => {
+    const fragmentStartAnchor = (n2.el = n1 ? n1.el : hostCreateText(''));
+    const fragmentEndAnchor = (n2.anchor = n1 ? n1.anchor : hostCreateText(''));
+    if (n1 == null) {
+      hostInsert(fragmentStartAnchor, container, null);
+
+      hostInsert(fragmentEndAnchor, container, null);
+
+      mountChildren(n2.children as VNode[], container, fragmentEndAnchor);
+    } else {
+      patchChildren(n1, n2, container, anchor);
+    }
+  };
+
+  const mountChildren = (
+    children: VNode[],
+    container: Element,
+    anchor: Element | null | undefined,
+    star = 0
+  ) => {
+    for (let i = star; i < children.length; i++) {
+      const child = normalizeVNode(children[i]);
+
+      patch(null, child, container, anchor);
     }
   };
 

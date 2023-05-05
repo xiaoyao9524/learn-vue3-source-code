@@ -5,6 +5,7 @@ export {
   Fragment,
   Comment,
   Text,
+  RenderNode,
   VNode,
   isVNode,
   createVNode,

@@ -7,9 +7,19 @@ import {
   normalizeClass
 } from '@vue/shared';
 
+import { Data } from './component';
+
 export const Fragment = Symbol('Fragment');
 export const Text = Symbol('Text');
 export const Comment = Symbol('Comment');
+
+export interface RenderNode {
+  [key: string]: any;
+}
+
+export type VNodeProps = {
+  key?: string | number | symbol;
+};
 
 export interface VNode {
   __v_isVNode: true;
@@ -20,6 +30,8 @@ export interface VNode {
   shapeFlag: number;
   patchFlag: number;
   el: any;
+  anchor: RenderNode | null;
+  memo?: boolean;
 }
 
 export const isVNode = (value: any): value is VNode => {
@@ -118,3 +130,31 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
  * 8 的二进制为 1000
  * 按位或结果为 1001，所以结果为9
  */
+
+// export function cloneIfMounted(child: VNode): VNode {
+//   return child.el == null || child.memo ? child : cloneVNode(child);
+// }
+
+// export function cloneVNode(
+//   child: VNode,
+//   extraProps?: (Data & VNodeProps) | null
+// ): VNode {}
+
+export function normalizeVNode(child?: VNode | null): VNode {
+  if (child == null || typeof child === 'boolean') {
+    return createVNode(Comment);
+  } else if (isArray(child)) {
+    // fragment
+    return createVNode(
+      Fragment,
+      null,
+      // 重用child时避免引用污染
+      child.slice()
+    );
+  } /* else if (typeof child === 'object') {
+    return cloneIfMounted(child); // 暂不处理此情况
+  } */ else {
+    // child为string或number
+    return createVNode(Text, null, String(child));
+  }
+}
