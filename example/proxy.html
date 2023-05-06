@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    const data = {
+      price: 10,
+      quantity: 20
+    }
+
+    const product = new Proxy(data, {
+      get (target, key, receiver) {
+        return Reflect.get(target, key, receiver)
+      },
+      set (target, key, newValue, receiver) {
+        const result = Reflect.set(target, key, newValue, receiver);
+
+        if (result) {
+          effect();
+        }
+
+        return result;
+      }
+    })
+
+    let total = product.price * product.quantity;
+
+    function effect () {
+      total = product.price * product.quantity;
+      console.log('total: ', total);
+    }
+
+    product.quantity = 30;
+  </script>
+</body>
+
+</html>
