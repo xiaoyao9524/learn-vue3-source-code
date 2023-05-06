@@ -131,9 +131,10 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
  * 按位或结果为 1001，所以结果为9
  */
 
-// export function cloneIfMounted(child: VNode): VNode {
-//   return child.el == null || child.memo ? child : cloneVNode(child);
-// }
+export function cloneIfMounted(child: VNode): VNode {
+  // return child.el == null || child.memo ? child : cloneVNode(child);
+  return child;
+}
 
 // export function cloneVNode(
 //   child: VNode,
@@ -151,9 +152,10 @@ export function normalizeVNode(child?: VNode | null): VNode {
       // 重用child时避免引用污染
       child.slice()
     );
-  } /* else if (typeof child === 'object') {
-    return cloneIfMounted(child); // 暂不处理此情况
-  } */ else {
+  } else if (typeof child === 'object') {
+    // child为vnode
+    return cloneIfMounted(child);
+  } else {
     // child为string或number
     return createVNode(Text, null, String(child));
   }
